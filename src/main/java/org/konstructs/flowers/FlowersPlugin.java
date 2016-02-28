@@ -1,4 +1,4 @@
-package konstructs.flowers;
+package org.konstructs.flowers;
 
 import java.util.Map;
 import java.util.Random;
