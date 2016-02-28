@@ -80,6 +80,8 @@ public class FlowersPlugin extends KonstructsActor {
         }
     }
 
+    @Override
+    public void onEventBlockRemoved(EventBlockRemoved block) {}
 
     @Override
     public void onReceive(Object message) {
