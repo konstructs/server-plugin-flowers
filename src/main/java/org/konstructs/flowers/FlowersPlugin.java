@@ -9,6 +9,8 @@ import konstructs.plugin.KonstructsActor;
 import konstructs.plugin.PluginConstructor;
 import konstructs.plugin.Config;
 import konstructs.api.*;
+import konstructs.api.messages.BlockUpdateEvent;
+import konstructs.api.messages.BoxQueryResult;
 
 public class FlowersPlugin extends KonstructsActor {
     private final FlowersConfig config;
@@ -39,16 +41,14 @@ public class FlowersPlugin extends KonstructsActor {
 
     void tryToSeed(Position pos) {
         Position start =
-            new Position(pos.x(),
-                         Math.max(pos.y() - config.getSeedHeightDifference(),
-                                  config.getMinSeedHeight()),
-                         pos.z());
+            pos.withY(Math.max(pos.getY() - config.getSeedHeightDifference(),
+                               config.getMinSeedHeight()));
         Position end =
-            new Position(pos.x() + 1,
-                         Math.min(pos.y() + config.getSeedHeightDifference(),
+            new Position(pos.getX() + 1,
+                         Math.min(pos.getY() + config.getSeedHeightDifference(),
                                   config.getMaxSeedHeight()),
-                         pos.z() + 1);
-        boxQuery(start, end);
+                         pos.getZ() + 1);
+        boxQuery(new Box(start, end));
     }
 
     void seed(Position pos) {
@@ -57,12 +57,12 @@ public class FlowersPlugin extends KonstructsActor {
 
     @Override
     public void onBoxQueryResult(BoxQueryResult result) {
-        Map<Position, BlockTypeId> placed = result.result().toPlaced();
+        Map<Position, BlockTypeId> placed = result.getAsMap();
         for(Map.Entry<Position, BlockTypeId> p: placed.entrySet()) {
             if(p.getValue().equals(growsOn)) {
-                Position pos = p.getKey().incY(1);
+                Position pos = p.getKey().addY(1);
                 BlockTypeId above = placed.get(pos);
-                if(above != null && above.equals(BlockTypeId.vacuum())) {
+                if(above != null && above.equals(BlockTypeId.VACUUM)) {
                     seed(pos);
                     return;
                 }
@@ -71,17 +71,14 @@ public class FlowersPlugin extends KonstructsActor {
     }
 
     @Override
-    public void onEventBlockUpdated(EventBlockUpdated update) {
-        for(Map.Entry<Position, BlockTypeId> p: update.blocks().entrySet()) {
-            if(p.getValue().equals(growsOn) &&
+    public void onBlockUpdateEvent(BlockUpdateEvent event) {
+        for(Map.Entry<Position, BlockUpdate> p: event.getUpdatedBlocks().entrySet()) {
+            if(p.getValue().getAfter().equals(growsOn) &&
                random.nextInt(1000) <= randomGrowth) {
                 tryToSeed(p.getKey());
             }
         }
     }
-
-    @Override
-    public void onEventBlockRemoved(EventBlockRemoved block) {}
 
     @Override
     public void onReceive(Object message) {
