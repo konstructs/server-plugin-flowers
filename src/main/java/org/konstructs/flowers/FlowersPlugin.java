@@ -48,7 +48,9 @@ public class FlowersPlugin extends KonstructsActor {
                          Math.min(pos.getY() + config.getSeedHeightDifference(),
                                   config.getMaxSeedHeight()),
                          pos.getZ() + 1);
-        boxQuery(new Box(start, end));
+        // Only run query if within the possible height band
+        if(start.getY() < end.getY())
+            boxQuery(new Box(start, end));
     }
 
     void seed(Position pos) {
@@ -73,7 +75,7 @@ public class FlowersPlugin extends KonstructsActor {
     @Override
     public void onBlockUpdateEvent(BlockUpdateEvent event) {
         for(Map.Entry<Position, BlockUpdate> p: event.getUpdatedBlocks().entrySet()) {
-            if(p.getValue().getAfter().equals(growsOn) &&
+            if(p.getValue().getAfter().getType().equals(growsOn) &&
                random.nextInt(1000) <= randomGrowth) {
                 tryToSeed(p.getKey());
             }
