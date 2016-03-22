@@ -57,7 +57,7 @@ class CanAFlowerGrowHere extends KonstructsActor {
     public void onBoxQueryResult(BoxQueryResult result) {
         for(Map.Entry<Position, BlockTypeId> p: result.getAsMap().entrySet()) {
             if(!(p.getValue().equals(BlockTypeId.VACUUM) || // Ignore vacuum
-                 p.getValue().equals(flower))) { // Ignore leaves from the same sort of tree
+                 p.getValue().equals(flower))) { // Ignore flowers of the same type
                 getContext().stop(getSelf()); /* We are done, let's die*/
                 return;
             }
