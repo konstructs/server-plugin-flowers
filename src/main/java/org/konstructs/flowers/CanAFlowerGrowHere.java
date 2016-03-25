@@ -8,12 +8,12 @@ import akka.actor.Props;
 
 import konstructs.plugin.KonstructsActor;
 import konstructs.api.*;
+import konstructs.api.messages.BoxQueryResult;
 
 class CanAFlowerGrowHere extends KonstructsActor {
     private final Position position;
     private final FlowersConfig config;
     private final BlockTypeId flower;
-    private final BlockTypeId vacuum = BlockTypeId.vacuum();
     private final Random random = new Random();
 
     public CanAFlowerGrowHere(ActorRef universe, Position position, FlowersConfig config) {
@@ -25,26 +25,24 @@ class CanAFlowerGrowHere extends KonstructsActor {
     }
 
     private void query(int radi) {
-        Position start =
-            new Position(position.x() - radi,
-                         position.y(),
-                         position.z() - radi);
-        Position end =
-            new Position(position.x() + radi + 1,
-                         position.y() + 1,
-                         position.z() + radi + 1);
-        boxQuery(start, end);
+        Position start = position
+            .subtractX(radi)
+            .subtractZ(radi);
+        Position end = position
+            .addX(radi + 1)
+            .addY(1)
+            .addZ(+ radi + 1);
+        boxQuery(new Box(start, end));
     }
 
     private void grow() {
-        replaceBlock(position, flower,
-                     BlockFilterFactory.vacuum());
+        replaceVacuumBlock(position, Block.create(flower));
         /* Plant seeds */
         int seeds = Math.max(config.getMinSeeds(), random.nextInt(config.getMaxSeeds() + 1));
         for(int i = 0; i < seeds; i++) {
-            Position p = new Position(position.x() + random.nextInt(config.getRadi() + 1),
-                                      position.y(),
-                                      position.z() + random.nextInt(config.getRadi() + 1));
+            Position p = position
+                .addX(random.nextInt(config.getRadi() + 1))
+                .addZ(random.nextInt(config.getRadi() + 1));
             int msec = config.getMinSeedDelay() * 1000 +
                 random.nextInt(config.getRandomSeedDelay()) * 1000;
             scheduleOnce(new FlowersPlugin.TryToSeed(p), msec, getContext().parent());
@@ -55,8 +53,8 @@ class CanAFlowerGrowHere extends KonstructsActor {
 
     @Override
     public void onBoxQueryResult(BoxQueryResult result) {
-        for(Map.Entry<Position, BlockTypeId> p: result.result().toPlaced().entrySet()) {
-            if(!(p.getValue().equals(vacuum) || // Ignore vacuum
+        for(Map.Entry<Position, BlockTypeId> p: result.getAsMap().entrySet()) {
+            if(!(p.getValue().equals(BlockTypeId.VACUUM) || // Ignore vacuum
                  p.getValue().equals(flower))) { // Ignore leaves from the same sort of tree
                 getContext().stop(getSelf()); /* We are done, let's die*/
                 return;
