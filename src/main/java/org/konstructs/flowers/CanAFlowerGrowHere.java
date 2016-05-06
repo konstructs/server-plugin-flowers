@@ -15,12 +15,14 @@ class CanAFlowerGrowHere extends KonstructsActor {
     private final FlowersConfig config;
     private final BlockTypeId flower;
     private final Random random = new Random();
+    private final float speed;
 
-    public CanAFlowerGrowHere(ActorRef universe, Position position, FlowersConfig config) {
+    public CanAFlowerGrowHere(ActorRef universe, Position position, FlowersConfig config, float speed) {
         super(universe);
         this.position = position;
         this.config = config;
         this.flower = config.getFlower();
+        this.speed = speed;
         query(config.getRadi());
     }
 
@@ -43,8 +45,8 @@ class CanAFlowerGrowHere extends KonstructsActor {
             Position p = position
                 .addX(random.nextInt(config.getRadi() + 1))
                 .addZ(random.nextInt(config.getRadi() + 1));
-            int msec = config.getMinSeedDelay() * 1000 +
-                random.nextInt(config.getRandomSeedDelay()) * 1000;
+            int msec = (int)((float)(config.getMinSeedDelay() * 1000 +
+                                     random.nextInt(config.getRandomSeedDelay()) * 1000) / speed);
             scheduleOnce(new FlowersPlugin.TryToSeed(p), msec, getContext().parent());
         }
 
@@ -63,7 +65,7 @@ class CanAFlowerGrowHere extends KonstructsActor {
         grow();
     }
 
-    public static Props props(ActorRef universe, Position start, FlowersConfig config) {
-        return Props.create(CanAFlowerGrowHere.class, universe, start, config);
+    public static Props props(ActorRef universe, Position start, FlowersConfig config, float speed) {
+        return Props.create(CanAFlowerGrowHere.class, universe, start, config, speed);
     }
 }

@@ -9,8 +9,7 @@ import konstructs.plugin.KonstructsActor;
 import konstructs.plugin.PluginConstructor;
 import konstructs.plugin.Config;
 import konstructs.api.*;
-import konstructs.api.messages.BlockUpdateEvent;
-import konstructs.api.messages.BoxQueryResult;
+import konstructs.api.messages.*;
 
 public class FlowersPlugin extends KonstructsActor {
     private final FlowersConfig config;
@@ -18,6 +17,7 @@ public class FlowersPlugin extends KonstructsActor {
     private final BlockTypeId flower;
     private final int randomGrowth;
     private final Random random = new Random();
+    private float speed = GlobalConfig.DEFAULT_SIMULATION_SPEED;
 
     public static class TryToSeed {
         private final Position position;
@@ -54,7 +54,7 @@ public class FlowersPlugin extends KonstructsActor {
     }
 
     void seed(Position pos) {
-        getContext().actorOf(CanAFlowerGrowHere.props(getUniverse(), pos, config));
+        getContext().actorOf(CanAFlowerGrowHere.props(getUniverse(), pos, config, speed));
     }
 
     @Override
@@ -80,6 +80,11 @@ public class FlowersPlugin extends KonstructsActor {
                 tryToSeed(p.getKey());
             }
         }
+    }
+
+    @Override
+    public void onGlobalConfig(GlobalConfig config) {
+        speed = config.getSimulationSpeed();
     }
 
     @Override
