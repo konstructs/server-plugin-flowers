@@ -2,9 +2,12 @@ package org.konstructs.flowers;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+
 import konstructs.plugin.KonstructsActor;
 import konstructs.plugin.PluginConstructor;
 import konstructs.plugin.Config;
@@ -13,7 +16,7 @@ import konstructs.api.messages.*;
 
 public class FlowersPlugin extends KonstructsActor {
     private final FlowersConfig config;
-    private final BlockTypeId growsOn;
+    private final List<BlockTypeId> growsOn;
     private final BlockTypeId flower;
     private final int randomGrowth;
     private final Random random = new Random();
@@ -61,7 +64,7 @@ public class FlowersPlugin extends KonstructsActor {
     public void onBoxQueryResult(BoxQueryResult result) {
         Map<Position, BlockTypeId> placed = result.getAsMap();
         for(Map.Entry<Position, BlockTypeId> p: placed.entrySet()) {
-            if(p.getValue().equals(growsOn)) {
+            if(growsOn.contains(p.getValue())) {
                 Position pos = p.getKey().addY(1);
                 BlockTypeId above = placed.get(pos);
                 if(above != null && above.equals(BlockTypeId.VACUUM)) {
@@ -75,7 +78,7 @@ public class FlowersPlugin extends KonstructsActor {
     @Override
     public void onBlockUpdateEvent(BlockUpdateEvent event) {
         for(Map.Entry<Position, BlockUpdate> p: event.getUpdatedBlocks().entrySet()) {
-            if(p.getValue().getAfter().getType().equals(growsOn) &&
+            if(growsOn.contains(p.getValue().getAfter().getType()) &&
                random.nextInt(1000) <= randomGrowth) {
                 tryToSeed(p.getKey());
             }
@@ -103,7 +106,7 @@ public class FlowersPlugin extends KonstructsActor {
               String pluginName,
               ActorRef universe,
               @Config(key = "flower-block") String flower,
-              @Config(key = "grows-on") String growsOn,
+              @Config(key = "grows-on") com.typesafe.config.Config growsOn,
               @Config(key = "max-seed-height-difference") int seedHeightDifference,
               @Config(key = "max-seed-height") int maxSeedHeight,
               @Config(key = "min-seed-height") int minSeedHeight,
@@ -115,9 +118,15 @@ public class FlowersPlugin extends KonstructsActor {
               @Config(key = "random-growth") int randomGrowth
               ) {
         Class currentClass = new Object() { }.getClass().getEnclosingClass();
+        List<String> growsOnTypes = new ArrayList<>();
+        for(String k: growsOn.root().keySet()) {
+            String type = growsOn.getString(k);
+            if(type != null)
+                growsOnTypes.add(type);
+        }
         FlowersConfig config =
             new FlowersConfig(flower,
-                              growsOn,
+                              growsOnTypes,
                               seedHeightDifference,
                               maxSeedHeight,
                               minSeedHeight,

@@ -1,10 +1,13 @@
 package org.konstructs.flowers;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import konstructs.api.BlockTypeId;
 
 public class FlowersConfig {
     private final BlockTypeId flower;
-    private final BlockTypeId growsOn;
+    private final List<BlockTypeId> growsOn;
     private final int seedHeightDifference;
     private final int maxSeedHeight;
     private final int minSeedHeight;
@@ -16,7 +19,7 @@ public class FlowersConfig {
     private final int randomGrowth;
 
     FlowersConfig(String flower,
-                 String growsOn,
+                 List<String> growsOn,
                  int seedHeightDifference,
                  int maxSeedHeight,
                  int minSeedHeight,
@@ -27,7 +30,10 @@ public class FlowersConfig {
                  int minSeeds,
                  int randomGrowth) {
         this.flower = BlockTypeId.fromString(flower);
-        this.growsOn = BlockTypeId.fromString(growsOn);
+        this.growsOn = new ArrayList<>();
+        for(String t: growsOn) {
+            this.growsOn.add(BlockTypeId.fromString(t));
+        }
         this.seedHeightDifference = seedHeightDifference;
         this.maxSeedHeight = maxSeedHeight;
         this.minSeedHeight = minSeedHeight;
@@ -42,7 +48,7 @@ public class FlowersConfig {
     public BlockTypeId getFlower() {
         return flower;
     }
-    public BlockTypeId getGrowsOn() {
+    public List<BlockTypeId> getGrowsOn() {
         return growsOn;
     }
     public int getSeedHeightDifference() {
