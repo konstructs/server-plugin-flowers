@@ -44,20 +44,27 @@ public class FlowersPlugin extends KonstructsActor {
 
     void tryToSeed(Position pos) {
         Position start =
-            pos.withY(Math.max(pos.getY() - config.getSeedHeightDifference(),
-                               config.getMinSeedHeight()));
+            pos.withY(pos.getY() - config.getSeedHeightDifference());
         Position end =
             new Position(pos.getX() + 1,
-                         Math.min(pos.getY() + config.getSeedHeightDifference(),
-                                  config.getMaxSeedHeight()),
+                         pos.getY() + config.getSeedHeightDifference(),
                          pos.getZ() + 1);
         // Only run query if within the possible height band
         if(start.getY() < end.getY())
             boxQuery(new Box(start, end));
     }
 
-    void seed(Position pos) {
-        getContext().actorOf(CanAFlowerGrowHere.props(getUniverse(), pos, config, speed));
+    void seed(Position position) {
+        replaceVacuumBlock(position, Block.create(flower));
+        /* Plant seeds */
+        if(random.nextFloat() < config.getSeedProbability()){
+            Position p = position
+                .addX(random.nextInt(config.getRadi() + 1))
+                .addZ(random.nextInt(config.getRadi() + 1));
+            int msec = (int)((float)(config.getMinSeedDelay() * 1000 +
+                                     random.nextInt(config.getRandomSeedDelay()) * 1000) / speed);
+            scheduleOnce(new TryToSeed(p), msec, getSelf());
+        }
     }
 
     @Override
@@ -108,13 +115,10 @@ public class FlowersPlugin extends KonstructsActor {
               @Config(key = "flower-block") String flower,
               @Config(key = "grows-on") com.typesafe.config.Config growsOn,
               @Config(key = "max-seed-height-difference") int seedHeightDifference,
-              @Config(key = "max-seed-height") int maxSeedHeight,
-              @Config(key = "min-seed-height") int minSeedHeight,
               @Config(key = "seed-radi") int radi,
               @Config(key = "min-seed-delay") int minSeedDelay,
               @Config(key = "random-seed-delay") int randomSeedDelay,
-              @Config(key = "max-seeds") int maxSeeds,
-              @Config(key = "min-seeds") int minSeeds,
+              @Config(key = "seed-probability") int seedProbability,
               @Config(key = "random-growth") int randomGrowth
               ) {
         Class currentClass = new Object() { }.getClass().getEnclosingClass();
@@ -128,13 +132,10 @@ public class FlowersPlugin extends KonstructsActor {
             new FlowersConfig(flower,
                               growsOnTypes,
                               seedHeightDifference,
-                              maxSeedHeight,
-                              minSeedHeight,
                               radi,
                               minSeedDelay,
                               randomSeedDelay,
-                              maxSeeds,
-                              minSeeds,
+                              (float)seedProbability / 100.0f,
                               randomGrowth);
         return Props.create(currentClass, pluginName, universe, config);
     }
