@@ -86,7 +86,7 @@ public class FlowersPlugin extends KonstructsActor {
     public void onBlockUpdateEvent(BlockUpdateEvent event) {
         for(Map.Entry<Position, BlockUpdate> p: event.getUpdatedBlocks().entrySet()) {
             if(growsOn.contains(p.getValue().getAfter().getType()) &&
-               random.nextInt(1000) <= randomGrowth) {
+               random.nextInt(10000) <= randomGrowth) {
                 tryToSeed(p.getKey());
             }
         }
