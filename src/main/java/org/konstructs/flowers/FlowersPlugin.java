@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 
+import com.typesafe.config.Config;
+
 import konstructs.plugin.KonstructsActor;
 import konstructs.plugin.PluginConstructor;
-import konstructs.plugin.Config;
 import konstructs.api.*;
 import konstructs.api.messages.*;
 
@@ -109,34 +110,10 @@ public class FlowersPlugin extends KonstructsActor {
 
     @PluginConstructor
     public static Props
-        props(
-              String pluginName,
-              ActorRef universe,
-              @Config(key = "flower-block") String flower,
-              @Config(key = "grows-on") com.typesafe.config.Config growsOn,
-              @Config(key = "max-seed-height-difference") int seedHeightDifference,
-              @Config(key = "seed-radi") int radi,
-              @Config(key = "min-seed-delay") int minSeedDelay,
-              @Config(key = "random-seed-delay") int randomSeedDelay,
-              @Config(key = "seed-probability") int seedProbability,
-              @Config(key = "random-growth") int randomGrowth
-              ) {
+        props(String pluginName, ActorRef universe, Config config) {
         Class currentClass = new Object() { }.getClass().getEnclosingClass();
-        List<String> growsOnTypes = new ArrayList<>();
-        for(String k: growsOn.root().keySet()) {
-            String type = growsOn.getString(k);
-            if(type != null)
-                growsOnTypes.add(type);
-        }
-        FlowersConfig config =
-            new FlowersConfig(flower,
-                              growsOnTypes,
-                              seedHeightDifference,
-                              radi,
-                              minSeedDelay,
-                              randomSeedDelay,
-                              (float)seedProbability / 100.0f,
-                              randomGrowth);
-        return Props.create(currentClass, pluginName, universe, config);
+        FlowersConfig flowersConfig =
+            new FlowersConfig(config);
+        return Props.create(currentClass, pluginName, universe, flowersConfig);
     }
 }
