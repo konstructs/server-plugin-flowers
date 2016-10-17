@@ -1,0 +1,17 @@
+---
+
+language: java
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+
+deploy:
+  provider: releases
+  api_key:
+    secure: HRNyqz+tocu5X/aqHsYOHhR7j6w3v+5VVBAIYSrdtyQeZrIyEm67unD0arnCRO0hC38kNdf500/iwaVWXyF91o1FBG+85RgZBKeQIw1Ic54MQa6dNZ2UCFUmz0sJgOM7B9Tq/4Mo/v7HiAFQXi2ez10Hf7ul/y8YVVPyehl3dvUVvTaSyhlH9BZUWIIGpK5KyyGcX3D3K1FyLZSlvo7z9DL+NfEUEKX0v9kwK41dKQ3wNs0osAcNEqSFV5NsroAhzOC7Mk2Y0rO5o2QgLxxMeeOtK5le27Wq5zypKzhV9DeKPo11ERYqIvz4XnnCiE/9XiNFywXZyEScVXwrXvJZxLxykfouJLIEOAcp3umQt03Ya3LIuEJ0q9lXt3BP54be3MiUuNR3AcU/wPPj1zxs0RzLNxkpcrsUgYCI0MPDD02kGMKP0DKOwNzQititWHAPrvhk/S+EoYO4tXbc4J9z0MFIlbqppAtj29knP+KkIjU93uRNPZO06hPTf2J4K0UOnrEZ6lsy8QRw0Bzv+rcSEHaMdWqoTmMSjIN1X5eQyy3pFwqe+KczQfmag+g7O5a7s/HzhWwLSLxGnBrQDAem1ez3ZjWR1keBpVqy2BhK6jKYIkT+EF+M6Hx6xmI63AzhCWCSvvuelNTabrCmxMPRVdKQwFEuwDO+7uqwa4GnQTg=
+  file: build/libs/server-plugin-flowers.jar
+  on:
+    repo: konstructs/server-plugin-flowers
+    tags: true
+    jdk: openjdk7
